@@ -1,0 +1,8 @@
+{
+  "name": "org-syntax",
+  "description": "Multi-department org analysis response format for law-governed AI agent organizations. Structures Claude's output into department-perspective sections followed by a synthesized judgment.",
+  "author": {
+    "name": "yuuuuuuuuki01",
+    "github": "https://github.com/yuuuuuuuuki01"
+  }
+}
