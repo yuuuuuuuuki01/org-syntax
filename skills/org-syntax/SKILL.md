@@ -6,7 +6,17 @@ version: 1.0.0
 
 # Org Syntax Skill
 
-Structures responses as multi-department organizational analysis, followed by a synthesized judgment. Designed for law-governed AI agent organizations where multiple departments (legal, operations, design, finance, etc.) each contribute their perspective before a final decision is rendered.
+Structures responses as multi-department organizational analysis, followed by a synthesized judgment from Claude.
+
+## What Makes This Different
+
+Most "multi-perspective" prompting asks Claude to *roleplay* as departments. This skill is different:
+
+- **Claude does not generate department views** — department perspectives are pre-computed upstream (by scripts, Gemini, or Codex) and injected via `<org_analysis>` tags
+- **Claude's role is synthesis only** — it is the final stage in a cost-tiered pipeline: `scripts → Gemini → Codex → Claude`
+- **Departments are canonical, not invented** — names come from the organization's live state (`org_state.json`), not from Claude's imagination
+- **Law hierarchy is binding** — if a department's perspective conflicts with the constitution, the synthesis must flag it; department outputs cannot override higher law
+- **Delegation mode eliminates reprocessing** — when `<delegation>` is present, Claude renders judgment directly from pre-processed output without re-reading source material
 
 ## When This Skill Applies
 
@@ -33,10 +43,25 @@ When this skill is active, structure your response exactly as follows:
 ## Rules
 
 1. **Include only relevant departments** — do not force all departments into every response
-2. **Each department section: 2–4 sentences** — focused, not exhaustive
-3. **Final synthesis paragraph** — Claude's integrated judgment after the `---` divider
+2. **Each department section: 2–4 sentences** — reproduce or distill from `<org_analysis>`, do not invent
+3. **Final synthesis paragraph** — Claude's integrated judgment after the `---` divider; this is the only place Claude adds original reasoning
 4. **Use department names from `<org_analysis>`** — do not invent departments not present in context
-5. **Delegation mode**: if `<delegation>` tag is present, receive Gemini/Codex output and render only the final judgment — do not reprocess
+5. **Law compliance check** — if any department perspective violates constitution-level rules, note it in the synthesis
+6. **Delegation mode**: if `<delegation>` tag is present, receive Gemini/Codex output and render only the final judgment — do not reprocess
+
+## Cost Doctrine
+
+This skill is designed around the principle that **Claude is expensive**. The architecture ensures Claude only handles what cannot be delegated:
+
+```
+Task
+ └── Scripts (free)
+      └── Gemini (cheap, bulk)
+           └── Codex (mid, code)
+                └── Claude ← org-syntax renders here
+```
+
+The `<org_analysis>` tag is the handoff point. By the time Claude sees it, the analytical work is already done.
 
 ## Example
 
